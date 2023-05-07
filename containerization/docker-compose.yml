@@ -1,0 +1,30 @@
+version: '3'
+services:
+  flask:
+      build:
+        context: .
+        dockerfile: Dockerfile
+      image: appp:0.0.2
+      container_name: flask2
+      restart: always
+      ports:
+        - "8001:8080"
+      user: "1002:1002"
+      environment:
+        - INCONTAINER=False
+        - PYTHONBUFFERED=False
+      volumes:
+        - ./container-data:/data
+      networks:
+        - main
+
+  redis:
+    image: redis:latest
+    restart: always
+    ports:
+      - "6379:6379"  
+    networks:
+      - main
+
+networks:
+  main:
