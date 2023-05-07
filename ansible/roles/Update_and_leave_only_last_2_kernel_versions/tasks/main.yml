@@ -1,0 +1,53 @@
+# tasks file for Update_and_leave_only_last_2_kernel_versions
+
+
+
+  - name: Upgrade all packages
+    apt: upgrade=dist
+
+  - name: Remove old kernels
+    apt:
+      name: "{{ item }}"
+      state: absent
+      purge: yes
+    with_items:
+      - linux-image-4.4.0-150-generic
+      - linux-image-4.4.0-148-generic
+
+  - name: Reboot system
+    shell: sleep 2 && shutdown -r now "Ansible updates triggered. Rebooting the system."
+    async: 0
+    poll: 0
+    ignore_errors: true
+    changed_when: false
+
+  - name: Wait for the system to shutdown and come back online
+    wait_for_connection:
+      connect_timeout: 15
+      sleep: 5
+      delay: 5
+      timeout: 300
+
+  - name: Remove old kernel packages
+    apt:
+      autoremove: yes
+      purge: yes
+
+  - name: Clean up Apt cache
+    apt:
+      autoclean: yes
+      cleanup: yes
+
+  - name: Verify the current kernel version
+    shell: uname -r
+    register: current_kernel
+
+  - name: Keep only the 2 latest kernel versions
+    apt:
+      name: "{{ item }}"
+      state: present
+      update_cache: yes
+    with_items:
+      - linux-image-{{ current_kernel.stdout ~ '-generic' }}
+      - linux-image-{{ current_kernel.stdout ~ '-generic-hwe' }}
+    when: item != current_kernel.stdout ~ '-generic'

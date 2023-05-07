@@ -1,0 +1,8 @@
+# Этот плейбук обновляет обновляет операционную систему  Ubuntu на хосте и оставляет только 2 последних версии ядра
+
+- name: Update Ubuntu and remove old kernel versions
+  hosts: all 
+  become: yes 
+
+  roles:
+    - { role: Update_and_leave_only_last_2_kernel_versions, when: ansible_system == 'Linux'}
