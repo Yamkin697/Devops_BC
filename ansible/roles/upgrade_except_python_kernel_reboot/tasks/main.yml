@@ -1,0 +1,42 @@
+---
+# tasks file for upgrade_except_python_kernel_reboot
+
+
+
+
+  - name: Check and Print LINUX Version
+    debug: var=ansible_os_family
+
+
+  - block:   #===Block for Ubuntu===
+
+     - name: Prevent python from being upgraded
+       ansible.builtin.dpkg_selections:
+         name: python
+         selection: hold
+
+     - name: Update cache for Ubuntu
+       apt:
+         update_cache: yes
+
+
+     - name: Upgrade all packages for Ubuntu , except python
+       apt:
+         upgrade: yes
+       register: result
+    when: ansible_os_family == "Debian"
+
+
+  - block:  #===Block for AlmaLinux===
+
+     - name: Upgrade all packages for AlmaLinux exclude kernel
+       yum:
+         name: '*'
+         state: latest
+         exclude: kernel*
+       register: result
+    when: ansible_os_family == "RedHat"
+
+  - name: Reboot the server
+    reboot:
+    when: result is succeeded
