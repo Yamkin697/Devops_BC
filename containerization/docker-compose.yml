@@ -8,11 +8,12 @@ services:
       container_name: flask2
       restart: always
       ports:
-        - "8001:8080"
+        - "5000:5000"
       user: "1002:1002"
       environment:
         - INCONTAINER=False
         - PYTHONBUFFERED=False
+        - CONTAINERENV=true
       volumes:
         - ./container-data:/data
       networks:
